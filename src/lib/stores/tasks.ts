@@ -1,7 +1,7 @@
 import { derived, get, writable } from 'svelte/store';
 import { insforge } from '$lib/insforge';
 import { categorizeByDate, dbTaskToTask, dbSubtaskToSubtask } from '$lib/mappers';
-import { userId } from '$lib/stores/auth';
+import { userId, user } from '$lib/stores/auth';
 import type {
   DbSubtask,
   DbTask,
@@ -313,7 +313,17 @@ export const tasks = {
       return;
     }
 
-    if (title) logActivity('completed', title);
+    if (title) {
+      logActivity('completed', title);
+      const currentUser = get(user);
+      if (currentUser?.email) {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: currentUser.email, taskTitle: title })
+        }).catch(err => console.error('Failed to trigger email notification:', err));
+      }
+    }
   },
 
   toggleStar: async (taskId: string) => {

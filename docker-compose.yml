@@ -32,6 +32,9 @@
     environment:
       NODE_ENV: production
       PORT: 3000
+      # Required by SvelteKit adapter-node for CSRF protection and proper routing on a server
+      # Set this in your server's .env file or rely on the default fallback (localhost)
+      ORIGIN: ${ORIGIN:-http://80.225.237.255:3000}
     restart: always
 
 volumes:
