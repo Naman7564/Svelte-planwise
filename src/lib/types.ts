@@ -15,7 +15,6 @@ export type Task = {
     dueDate?: string;
     priority?: TaskPriority;
     completed: boolean;
-    starred: boolean;
     expanded: boolean; // UI-only
     group: 'overdue' | 'today' | 'upcoming'; // derived
     tag: TaskTag; // derived
@@ -28,7 +27,6 @@ export type EventItem = {
     startHour: number;
     endHour: number;
     tag: string;
-    starred: boolean;
 };
 
 export type WeeklyStat = {
@@ -38,7 +36,7 @@ export type WeeklyStat = {
 
 export type RecentActivityItem = {
     id: string;
-    type: 'completed' | 'starred' | 'added';
+    type: 'completed' | 'added';
     taskTitle: string;
     timestamp: number;
 };
@@ -49,7 +47,6 @@ export type NewTaskInput = {
     description?: string;
     dueDate?: string;
     priority?: TaskPriority;
-    starred?: boolean;
 };
 
 // ─── DB row types (snake_case as returned from PostgREST) ───────────
@@ -61,7 +58,6 @@ export type DbTask = {
     due_date: string | null;
     priority: string | null;
     status: string | null;
-    starred: boolean;
     list_id: string | null;
     project_id: string | null;
     created_at: string;

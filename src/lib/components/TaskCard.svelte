@@ -1,7 +1,6 @@
 <script lang="ts">
   import { fly, slide } from 'svelte/transition';
   import Checkbox from '$lib/components/Checkbox.svelte';
-  import StarButton from '$lib/components/StarButton.svelte';
   import { tasks } from '$lib/stores/tasks';
   import type { Task } from '$lib/types';
 
@@ -58,7 +57,6 @@
           <span class="text-neutral-500">Tasks</span>
         </div>
         <div class="flex items-center gap-2">
-          <StarButton starred={task.starred} onToggle={() => tasks.toggleStar(task.id)} />
           <button
             type="button"
             class="text-neutral-500 transition hover:text-red-400 active:scale-95"

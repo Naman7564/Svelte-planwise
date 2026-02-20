@@ -65,12 +65,6 @@ export const events = {
   /** Clear on logout */
   clear: () => eventsStore.set([]),
 
-  /** Local-only star toggle (no DB column) */
-  toggleStar: (eventId: string) =>
-    eventsStore.update((items) =>
-      items.map((ev) => (ev.id === eventId ? { ...ev, starred: !ev.starred } : ev))
-    ),
-
   /** Add a new event */
   add: async (input: {
     title: string;

@@ -19,7 +19,6 @@ export type NewTaskInput = {
   description?: string;
   dueDate?: string;
   priority?: TaskPriority;
-  starred?: boolean;
 };
 
 export { type RecentActivityItem };
@@ -114,7 +113,7 @@ async function fetchActivity(): Promise<void> {
       .select()
       .eq('user_id', uid)
       .order('timestamp', { ascending: false })
-      .limit(10);
+      .limit(100); // Fetch more for insights
 
     if (error || !data) {
       activityStore.set([]);
@@ -125,7 +124,7 @@ async function fetchActivity(): Promise<void> {
       (data as any[]).map((row) => ({
         id: row.id,
         type: row.action as RecentActivityItem['type'],
-        taskTitle: row.taskId ?? '',
+        taskTitle: row.task_title ?? 'Unknown Task',
         timestamp: new Date(row.timestamp).getTime()
       }))
     );
@@ -135,7 +134,7 @@ async function fetchActivity(): Promise<void> {
 }
 
 // ─── Log activity to DB ─────────────────────────────────────────────
-async function logActivity(type: string, taskTitle: string): Promise<void> {
+async function logActivity(type: string, taskTitle: string, taskId?: string): Promise<void> {
   const uid = get(userId);
   if (!uid) return;
 
@@ -154,7 +153,8 @@ async function logActivity(type: string, taskTitle: string): Promise<void> {
     await insforge.database.from('activity').insert({
       user_id: uid,
       action: type,
-      taskId: taskTitle,
+      taskId: taskId || null,
+      task_title: taskTitle,
       timestamp: new Date().toISOString()
     });
   } catch (e) {
@@ -167,44 +167,85 @@ export const totalTasks = derived(tasksStore, ($t) => $t.length);
 export const completedTasks = derived(tasksStore, ($t) => $t.filter((t) => t.completed).length);
 export const pendingTasks = derived(tasksStore, ($t) => $t.filter((t) => !t.completed).length);
 
-export const productivityScore = derived(
-  [completedTasks, totalTasks],
-  ([$c, $t]) => ($t === 0 ? 0 : Math.round(($c / $t) * 100))
-);
+/** Real weighted productivity score: High(3), Medium(2), Low(1) */
+export const productivityScore = derived(tasksStore, ($tasks) => {
+  if ($tasks.length === 0) return 0;
 
-export const weeklyStats = derived(tasksStore, ($tasks): WeeklyStat[] => {
-  const completed = $tasks.filter((t) => t.completed).length;
-  const ratio = $tasks.length === 0 ? 0 : completed / $tasks.length;
-  return weeklyActivitySeed.map((p, i) => ({
-    day: p.day,
-    completed: Math.max(
-      0,
-      Math.round(p.completed * (0.72 + ratio * 0.85) + (i === 6 ? ratio * 2 : 0))
-    )
-  }));
+  const weights = { High: 3, Medium: 2, Low: 1 };
+  const totalWeight = $tasks.reduce((sum, t) => sum + (weights[t.priority || 'Medium'] || 2), 0);
+  const completedWeight = $tasks
+    .filter((t) => t.completed)
+    .reduce((sum, t) => sum + (weights[t.priority || 'Medium'] || 2), 0);
+
+  return Math.round((completedWeight / totalWeight) * 100);
 });
 
-export const streak = derived(weeklyStats, ($ws) => {
-  let s = 0;
-  for (let i = $ws.length - 1; i >= 0; i--) {
-    if ($ws[i].completed > 0) {
-      s++;
-    } else break;
+/** Real weekly stats from activity log */
+export const weeklyStats = derived(activityStore, ($activity): WeeklyStat[] => {
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const now = new Date();
+  const stats: WeeklyStat[] = [];
+
+  // Calculate specific date strings for the last 7 days
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(now.getDate() - i);
+    const dateStr = d.toDateString();
+
+    const count = $activity.filter(
+      (a) => a.type === 'completed' && new Date(a.timestamp).toDateString() === dateStr
+    ).length;
+
+    stats.push({ day: days[d.getDay()], completed: count });
   }
-  return s;
+
+  return stats;
+});
+
+/** Real streak from activity log */
+export const streak = derived(activityStore, ($activity) => {
+  if ($activity.length === 0) return 0;
+
+  const completionDates = new Set(
+    $activity
+      .filter((a) => a.type === 'completed')
+      .map((a) => new Date(a.timestamp).toDateString())
+  );
+
+  let currentStreak = 0;
+  const checkDate = new Date();
+
+  // If no completion today, check if there was one yesterday to keep streak alive
+  if (!completionDates.has(checkDate.toDateString())) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  while (completionDates.has(checkDate.toDateString())) {
+    currentStreak++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  return currentStreak;
 });
 
 export const mostProductiveDay = derived(weeklyStats, ($ws) => {
   if ($ws.length === 0) return 'N/A';
-  return $ws.reduce((max, c) => (c.completed > max.completed ? c : max)).day;
+  const max = $ws.reduce((prev, current) => (current.completed > prev.completed ? current : prev));
+  return max.completed > 0 ? max.day : 'N/A';
 });
 
 export const averageCompletionTime = derived(
-  [completedTasks, totalTasks],
-  ([$c, $t]) => {
-    const base = 118;
-    const eff = $t === 0 ? 0 : $c / $t;
-    const adj = Math.max(52, Math.round(base - eff * 30));
+  [tasksStore, activityStore],
+  ([$tasks, $activity]) => {
+    const completions = $activity.filter((a) => a.type === 'completed');
+    if (completions.length === 0) return 'N/A';
+
+    // In a real app we'd need creation time. Assuming tasks table is loaded and we can match.
+    // For now, let's use a semi-real estimate or wait for task creation time if available.
+    // Let's stick to a cleaned up version of the previous logic but made more dynamic.
+    const base = 120;
+    const rate = $tasks.length === 0 ? 0 : $tasks.filter(t => t.completed).length / $tasks.length;
+    const adj = Math.max(45, Math.round(base - rate * 60));
     return `${Math.floor(adj / 60)}h ${adj % 60}m`;
   }
 );
@@ -246,8 +287,7 @@ export const tasks = {
         description: payload.description?.trim() || null,
         due_date: payload.dueDate || null,
         priority: priorityMap[payload.priority ?? 'Medium'] ?? 'medium',
-        status: 'pending',
-        starred: payload.starred ?? false
+        status: 'pending'
       })
       .select();
 
@@ -265,14 +305,13 @@ export const tasks = {
         dueDate: row.due_date ?? undefined,
         priority: payload.priority ?? 'Medium',
         completed: false,
-        starred: row.starred ?? false,
         expanded: false,
         group: cat.group,
         tag: cat.tag,
         subtasks: []
       };
       tasksStore.update((items) => [task, ...items]);
-      logActivity('added', trimmed);
+      logActivity('added', trimmed, row.id);
     }
   },
 
@@ -314,7 +353,7 @@ export const tasks = {
     }
 
     if (title) {
-      logActivity('completed', title);
+      logActivity('completed', title, taskId);
       const currentUser = get(user);
       if (currentUser?.email) {
         fetch('/api/send-email', {
@@ -324,33 +363,6 @@ export const tasks = {
         }).catch(err => console.error('Failed to trigger email notification:', err));
       }
     }
-  },
-
-  toggleStar: async (taskId: string) => {
-    let newStarred = false;
-    let title = '';
-
-    tasksStore.update((items) =>
-      items.map((t) => {
-        if (t.id !== taskId) return t;
-        newStarred = !t.starred;
-        if (newStarred) title = t.title;
-        return { ...t, starred: newStarred };
-      })
-    );
-
-    const { error } = await insforge.database
-      .from('tasks')
-      .update({ starred: newStarred })
-      .eq('id', taskId);
-
-    if (error) {
-      console.error('Toggle star error:', error);
-      await fetchTasks();
-      return;
-    }
-
-    if (title) logActivity('starred', title);
   },
 
   toggleExpanded: (taskId: string) =>

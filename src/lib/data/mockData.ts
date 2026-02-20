@@ -14,7 +14,6 @@ export type Task = {
   dueDate?: string;
   priority?: TaskPriority;
   completed: boolean;
-  starred: boolean;
   expanded: boolean;
   group: 'overdue' | 'today' | 'upcoming';
   tag: TaskTag;
@@ -27,7 +26,6 @@ export type EventItem = {
   startHour: number;
   endHour: number;
   tag: string;
-  starred: boolean;
 };
 
 export type WeeklyStatSeed = {
@@ -37,7 +35,7 @@ export type WeeklyStatSeed = {
 
 export type RecentActivitySeed = {
   id: string;
-  type: 'completed' | 'starred' | 'added';
+  type: 'completed' | 'added';
   taskTitle: string;
   timestamp: number;
 };
@@ -57,7 +55,6 @@ export const initialTasks: Task[] = [
     dueDate: toISODate(-1),
     priority: 'High',
     completed: false,
-    starred: false,
     expanded: false,
     group: 'overdue',
     tag: 'Yesterday',
@@ -70,7 +67,6 @@ export const initialTasks: Task[] = [
     dueDate: toISODate(0),
     priority: 'Medium',
     completed: true,
-    starred: true,
     expanded: true,
     group: 'today',
     tag: 'Today',
@@ -86,7 +82,6 @@ export const initialTasks: Task[] = [
     dueDate: toISODate(0),
     priority: 'High',
     completed: false,
-    starred: true,
     expanded: false,
     group: 'today',
     tag: 'Today',
@@ -103,7 +98,6 @@ export const initialTasks: Task[] = [
     dueDate: toISODate(2),
     priority: 'Low',
     completed: false,
-    starred: false,
     expanded: false,
     group: 'upcoming',
     tag: 'Upcoming',
@@ -124,7 +118,6 @@ export const weeklyActivitySeed: WeeklyStatSeed[] = [
 const now = Date.now();
 export const initialRecentActivity: RecentActivitySeed[] = [
   { id: 'a-1', type: 'completed', taskTitle: 'Email Client', timestamp: now - 1000 * 60 * 15 },
-  { id: 'a-2', type: 'starred', taskTitle: 'Design System', timestamp: now - 1000 * 60 * 43 },
   { id: 'a-3', type: 'added', taskTitle: 'Meeting Notes', timestamp: now - 1000 * 60 * 85 }
 ];
 
@@ -134,23 +127,20 @@ export const initialEvents: EventItem[] = [
     title: 'New Design System',
     startHour: 13,
     endHour: 17,
-    tag: 'New Design',
-    starred: true
+    tag: 'New Design'
   },
   {
     id: 'e-2',
     title: 'Continue Coding',
     startHour: 18,
     endHour: 19,
-    tag: 'Build',
-    starred: false
+    tag: 'Build'
   },
   {
     id: 'e-3',
     title: 'Email Back Mrs James',
     startHour: 19,
     endHour: 20,
-    tag: 'Comms',
-    starred: false
+    tag: 'Comms'
   }
 ];

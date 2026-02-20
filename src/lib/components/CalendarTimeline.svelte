@@ -91,22 +91,14 @@
               <span class="h-2 w-2 rounded-full {priorityDot(task.priority)}"></span>
               <h3 class="truncate text-sm font-semibold">{task.title}</h3>
             </div>
-            {#if task.description}
-              <p class="mt-1 truncate text-[11px] opacity-70">{task.description}</p>
-            {/if}
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 text-[10px] uppercase tracking-wider opacity-60">
               <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Task · {task.priority ?? 'Medium'}
+              Task
             </div>
-            {#if task.starred}
-              <svg class="h-3.5 w-3.5 fill-amber-400 text-amber-400" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            {/if}
           </div>
         </div>
       </article>

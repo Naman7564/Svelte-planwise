@@ -1,5 +1,4 @@
 <script lang="ts">
-  import StarButton from '$lib/components/StarButton.svelte';
   import { events } from '$lib/stores/events';
   import type { EventItem } from '$lib/types';
 
@@ -19,7 +18,5 @@
     </div>
     <div class="flex items-center justify-between">
       <p class="text-xs text-neutral-300">{event.startHour % 12 || 12}{event.startHour >= 12 ? 'PM' : 'AM'} - {event.endHour % 12 || 12}{event.endHour >= 12 ? 'PM' : 'AM'}</p>
-      <StarButton starred={event.starred} onToggle={() => events.toggleStar(event.id)} />
     </div>
-  </div>
 </article>

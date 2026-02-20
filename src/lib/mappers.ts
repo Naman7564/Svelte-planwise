@@ -48,7 +48,6 @@ export function dbTaskToTask(row: DbTask, subtasks: Subtask[] = []): Task {
         dueDate: row.due_date ?? undefined,
         priority: normalizePriority(row.priority),
         completed: row.status === 'completed',
-        starred: row.starred ?? false,
         expanded: false,
         group: cat.group,
         tag: cat.tag,
@@ -72,14 +71,12 @@ export function dbEventToEventItem(row: DbEvent): EventItem {
         title: row.title,
         startHour: start.getHours() + start.getMinutes() / 60,
         endHour: end.getHours() + end.getMinutes() / 60,
-        tag: row.tag ?? 'General',
-        starred: false // events table has no starred column; local-only
+        tag: row.tag ?? 'General'
     };
 }
 
 const actionTypeMap: Record<string, RecentActivityItem['type']> = {
     completed: 'completed',
-    starred: 'starred',
     added: 'added'
 };
 

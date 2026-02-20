@@ -13,7 +13,6 @@
   let description = '';
   let dueDate = new Date().toISOString().slice(0, 10);
   let priority: TaskPriority = 'Medium';
-  let starred = false;
   let submitting = false;
   let titleInput: HTMLInputElement | null = null;
 
@@ -43,8 +42,7 @@
       title: title.trim(),
       description: description.trim(),
       dueDate,
-      priority,
-      starred
+      priority
     });
     dispatch('close');
   };
@@ -135,20 +133,7 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between rounded-xl border border-neutral-700 bg-neutral-800/60 px-3 py-2.5">
-        <span class="text-sm text-neutral-200">Star task</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={starred}
-          class={`h-6 w-11 rounded-full border border-neutral-600 p-1 transition ${starred ? 'bg-orange-500' : 'bg-neutral-700'}`}
-          on:click={() => (starred = !starred)}
-        >
-          <span class={`block h-4 w-4 rounded-full bg-white transition ${starred ? 'translate-x-5' : ''}`}></span>
-        </button>
-      </div>
-
-      <div class="border-t border-neutral-700 pt-4"></div>
+      <div class="border-t border-neutral-700 pt-2"></div>
 
       <div class="flex justify-end gap-3">
         <button

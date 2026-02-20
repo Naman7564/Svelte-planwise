@@ -126,10 +126,14 @@ export async function signIn(email: string, password: string): Promise<boolean> 
 export async function signInWithOAuth(provider: 'google' | 'github'): Promise<void> {
     clearError();
     try {
-        await insforge.auth.signInWithOAuth({
+        const { error } = await insforge.auth.signInWithOAuth({
             provider,
             redirectTo: window.location.origin + '/'
         });
+
+        if (error) {
+            authError.set(error.message || 'OAuth error');
+        }
     } catch (e: any) {
         authError.set(e?.message || 'OAuth error');
     }

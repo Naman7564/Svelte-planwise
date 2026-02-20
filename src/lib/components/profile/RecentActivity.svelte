@@ -6,7 +6,6 @@
 
   const labelMap = {
     completed: { icon: '&#10004;', title: 'Completed' },
-    starred: { icon: '&#11088;', title: 'Starred' },
     added: { icon: '&#10133;', title: 'Added' }
   };
 
