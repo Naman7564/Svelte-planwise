@@ -1,6 +1,14 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import { signOut } from '$lib/stores/auth';
+
   let darkMode = true;
   let notifications = true;
+
+  async function handleLogout() {
+    await signOut();
+    goto('/auth', { replaceState: true });
+  }
 </script>
 
 <section class="rounded-2xl border border-neutral-700 bg-neutral-800/80 p-4 shadow-soft backdrop-blur-md transition hover:-translate-y-0.5">
@@ -43,7 +51,11 @@
       <button type="button" class="mt-3 rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-200 transition hover:border-neutral-500 active:scale-95">
         Change Password
       </button>
-      <button type="button" class="mt-2 block rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/50 active:scale-95">
+      <button
+        type="button"
+        class="mt-2 block rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/50 active:scale-95"
+        on:click={handleLogout}
+      >
         Logout
       </button>
     </div>

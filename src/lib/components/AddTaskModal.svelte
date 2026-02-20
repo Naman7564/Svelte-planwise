@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, tick } from 'svelte';
   import { scale } from 'svelte/transition';
-  import type { TaskPriority } from '$lib/data/mockData';
+  import type { TaskPriority } from '$lib/types';
   import type { NewTaskInput } from '$lib/stores/tasks';
 
   const dispatch = createEventDispatcher<{

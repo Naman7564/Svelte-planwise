@@ -1,7 +1,7 @@
 <script lang="ts">
   import StarButton from '$lib/components/StarButton.svelte';
   import { events } from '$lib/stores/events';
-  import type { EventItem } from '$lib/data/mockData';
+  import type { EventItem } from '$lib/types';
 
   export let event: EventItem;
   export let top = 0;

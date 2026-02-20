@@ -2,7 +2,7 @@
   import { flip } from 'svelte/animate';
   import { slide } from 'svelte/transition';
   import TaskCard from '$lib/components/TaskCard.svelte';
-  import type { Task } from '$lib/data/mockData';
+  import type { Task } from '$lib/types';
 
   export let title: string;
   export let tasks: Task[];

@@ -3,7 +3,7 @@
   import Checkbox from '$lib/components/Checkbox.svelte';
   import StarButton from '$lib/components/StarButton.svelte';
   import { tasks } from '$lib/stores/tasks';
-  import type { Task } from '$lib/data/mockData';
+  import type { Task } from '$lib/types';
 
   export let task: Task;
 
