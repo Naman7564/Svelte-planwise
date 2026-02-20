@@ -27,6 +27,18 @@ export type EventItem = {
   starred: boolean;
 };
 
+export type WeeklyStatSeed = {
+  day: string;
+  completed: number;
+};
+
+export type RecentActivitySeed = {
+  id: string;
+  type: 'completed' | 'starred' | 'added';
+  taskTitle: string;
+  timestamp: number;
+};
+
 export const initialTasks: Task[] = [
   {
     id: 't-1',
@@ -43,7 +55,7 @@ export const initialTasks: Task[] = [
     id: 't-2',
     title: 'Email Back Mrs James',
     description: 'Confirm intern timeline and onboarding tasks for next week.',
-    completed: false,
+    completed: true,
     starred: true,
     expanded: true,
     group: 'today',
@@ -79,6 +91,23 @@ export const initialTasks: Task[] = [
     tag: 'Today',
     subtasks: []
   }
+];
+
+export const weeklyActivitySeed: WeeklyStatSeed[] = [
+  { day: 'Mon', completed: 3 },
+  { day: 'Tue', completed: 4 },
+  { day: 'Wed', completed: 5 },
+  { day: 'Thu', completed: 2 },
+  { day: 'Fri', completed: 6 },
+  { day: 'Sat', completed: 3 },
+  { day: 'Sun', completed: 4 }
+];
+
+const now = Date.now();
+export const initialRecentActivity: RecentActivitySeed[] = [
+  { id: 'a-1', type: 'completed', taskTitle: 'Email Client', timestamp: now - 1000 * 60 * 15 },
+  { id: 'a-2', type: 'starred', taskTitle: 'Design System', timestamp: now - 1000 * 60 * 43 },
+  { id: 'a-3', type: 'added', taskTitle: 'Meeting Notes', timestamp: now - 1000 * 60 * 85 }
 ];
 
 export const initialEvents: EventItem[] = [

@@ -31,20 +31,21 @@ src/
     +layout.svelte
     +page.svelte
     calendar/+page.svelte
-    all/+page.svelte
+    profile/+page.svelte
   lib/
     components/
+    components/profile/
     stores/
     data/
 ```
 
 ## Features
 
-- My Day, Calendar, and All Tasks views
+- My Day and Calendar views
+- Profile dashboard analytics page
 - Reusable component architecture
-- Local state with Svelte stores
+- Local state with Svelte stores and derived stats
 - Add, delete, complete, expand, and star tasks
-- Collapsible task groups
-- Calendar timeline powered by mock event data
+- Activity chart, insights, settings cards, and recent activity feed
 - Responsive mobile shell (max width ~420px)
 - Smooth transitions and interaction animations
