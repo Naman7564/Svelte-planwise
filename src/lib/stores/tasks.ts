@@ -3,6 +3,7 @@ import {
   initialRecentActivity,
   initialTasks,
   weeklyActivitySeed,
+  type TaskPriority,
   type RecentActivitySeed,
   type Task
 } from '$lib/data/mockData';
@@ -13,6 +14,14 @@ export type WeeklyStat = {
 };
 
 export type RecentActivityItem = RecentActivitySeed;
+export type NewTaskInput = {
+  id?: number;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  priority?: TaskPriority;
+  starred?: boolean;
+};
 
 const cloneTasks = (items: Task[]) =>
   items.map((task) => ({
@@ -26,6 +35,21 @@ const activityStore = writable<RecentActivityItem[]>([...initialRecentActivity])
 
 const id = () => `t-${Math.random().toString(36).slice(2, 9)}`;
 const activityId = () => `a-${Math.random().toString(36).slice(2, 9)}`;
+
+const categorizeByDate = (dueDate?: string): { group: Task['group']; tag: Task['tag'] } => {
+  if (!dueDate) return { group: 'today', tag: 'Today' };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(due.getTime())) return { group: 'today', tag: 'Today' };
+  if (due.getTime() < today.getTime()) return { group: 'overdue', tag: 'Overdue' };
+  if (due.getTime() > today.getTime()) return { group: 'upcoming', tag: 'Upcoming' };
+  return { group: 'today', tag: 'Today' };
+};
 
 const appendActivity = (type: RecentActivityItem['type'], taskTitle: string) => {
   activityStore.update((items) => [
@@ -97,19 +121,24 @@ export const tasks = {
     tasksStore.set(cloneTasks(initialTasks));
     activityStore.set([...initialRecentActivity]);
   },
-  add: (title: string) => {
-    const trimmed = title.trim();
+  add: (input: string | NewTaskInput) => {
+    const payload: NewTaskInput = typeof input === 'string' ? { title: input } : input;
+    const trimmed = payload.title.trim();
     if (!trimmed) return;
+    const category = categorizeByDate(payload.dueDate);
 
     tasksStore.update((items) => [
       {
-        id: id(),
+        id: payload.id ? `t-${payload.id}` : id(),
         title: trimmed,
+        description: payload.description?.trim(),
+        dueDate: payload.dueDate,
+        priority: payload.priority ?? 'Medium',
         completed: false,
-        starred: false,
+        starred: payload.starred ?? false,
         expanded: false,
-        group: 'today',
-        tag: 'Today',
+        group: category.group,
+        tag: category.tag,
         subtasks: []
       },
       ...items

@@ -4,16 +4,19 @@ export type Subtask = {
   done: boolean;
 };
 
-export type TaskTag = 'Today' | 'Yesterday' | 'Overdue';
+export type TaskPriority = 'Low' | 'Medium' | 'High';
+export type TaskTag = 'Today' | 'Yesterday' | 'Overdue' | 'Upcoming';
 
 export type Task = {
   id: string;
   title: string;
   description?: string;
+  dueDate?: string;
+  priority?: TaskPriority;
   completed: boolean;
   starred: boolean;
   expanded: boolean;
-  group: 'overdue' | 'today';
+  group: 'overdue' | 'today' | 'upcoming';
   tag: TaskTag;
   subtasks: Subtask[];
 };
@@ -39,11 +42,20 @@ export type RecentActivitySeed = {
   timestamp: number;
 };
 
+const toISODate = (offsetDays = 0) => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + offsetDays);
+  return date.toISOString().slice(0, 10);
+};
+
 export const initialTasks: Task[] = [
   {
     id: 't-1',
     title: 'Call Jason',
     description: 'Follow up on deployment blockers and contract updates.',
+    dueDate: toISODate(-1),
+    priority: 'High',
     completed: false,
     starred: false,
     expanded: false,
@@ -55,6 +67,8 @@ export const initialTasks: Task[] = [
     id: 't-2',
     title: 'Email Back Mrs James',
     description: 'Confirm intern timeline and onboarding tasks for next week.',
+    dueDate: toISODate(0),
+    priority: 'Medium',
     completed: true,
     starred: true,
     expanded: true,
@@ -69,6 +83,8 @@ export const initialTasks: Task[] = [
     id: 't-3',
     title: 'New Design System',
     description: 'Review color tokens and reusable card patterns.',
+    dueDate: toISODate(0),
+    priority: 'High',
     completed: false,
     starred: true,
     expanded: false,
@@ -84,11 +100,13 @@ export const initialTasks: Task[] = [
     id: 't-4',
     title: 'Continue Coding',
     description: 'Finish timeline interactions and keyboard accessibility.',
+    dueDate: toISODate(2),
+    priority: 'Low',
     completed: false,
     starred: false,
     expanded: false,
-    group: 'today',
-    tag: 'Today',
+    group: 'upcoming',
+    tag: 'Upcoming',
     subtasks: []
   }
 ];

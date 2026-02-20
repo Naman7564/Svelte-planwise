@@ -6,6 +6,13 @@
   import type { Task } from '$lib/data/mockData';
 
   export let task: Task;
+
+  const formatDueDate = (value?: string) => {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit' }).format(parsed);
+  };
 </script>
 
 <article
@@ -37,9 +44,17 @@
 
       <div class="mt-2 flex items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-2">
-          <span class="font-medium {task.tag === 'Yesterday' || task.tag === 'Overdue' ? 'text-red-400' : 'text-neutral-400'}">
+          <span class="font-medium {task.tag === 'Yesterday' || task.tag === 'Overdue' ? 'text-red-400' : task.tag === 'Upcoming' ? 'text-sky-400' : 'text-neutral-400'}">
             {task.tag}
           </span>
+          {#if task.priority}
+            <span class="rounded-full px-2 py-0.5 {task.priority === 'High' ? 'bg-red-400/15 text-red-300' : task.priority === 'Low' ? 'bg-emerald-400/15 text-emerald-300' : 'bg-yellow-400/15 text-yellow-300'}">
+              {task.priority}
+            </span>
+          {/if}
+          {#if task.dueDate}
+            <span class="text-neutral-500">{formatDueDate(task.dueDate)}</span>
+          {/if}
           <span class="text-neutral-500">Tasks</span>
         </div>
         <div class="flex items-center gap-2">
