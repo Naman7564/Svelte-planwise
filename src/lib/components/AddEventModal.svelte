@@ -1,0 +1,190 @@
+<script lang="ts">
+  import { createEventDispatcher, onMount, tick } from 'svelte';
+  import { scale } from 'svelte/transition';
+
+  type NewEventInput = {
+    title: string;
+    date: string;
+    startHour: number;
+    endHour: number;
+    tag?: string;
+  };
+
+  const dispatch = createEventDispatcher<{
+    close: void;
+    addEvent: NewEventInput;
+  }>();
+
+  let title = '';
+  let date = new Date().toISOString().slice(0, 10);
+  let startTime = '13:00';
+  let endTime = '14:00';
+  let tag = 'General';
+  let submitting = false;
+  let titleInput: HTMLInputElement | null = null;
+
+  const tagOptions = ['General', 'Meeting', 'Focus', 'Build', 'Comms', 'Design', 'Personal'];
+
+  const tagColors: Record<string, string> = {
+    General: 'bg-neutral-500',
+    Meeting: 'bg-violet-500',
+    Focus: 'bg-amber-500',
+    Build: 'bg-sky-500',
+    Comms: 'bg-emerald-500',
+    Design: 'bg-pink-500',
+    Personal: 'bg-orange-500'
+  };
+
+  const close = () => {
+    if (submitting) return;
+    dispatch('close');
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') close();
+  };
+
+  const onOverlayClick = (event: MouseEvent) => {
+    if (event.target === event.currentTarget) close();
+  };
+
+  const timeToHour = (time: string): number => {
+    const [h, m] = time.split(':').map(Number);
+    return h + m / 60;
+  };
+
+  const submit = async () => {
+    if (submitting || !title.trim()) return;
+
+    const sH = timeToHour(startTime);
+    const eH = timeToHour(endTime);
+    if (eH <= sH) return;
+
+    submitting = true;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    dispatch('addEvent', {
+      title: title.trim(),
+      date,
+      startHour: sH,
+      endHour: eH,
+      tag
+    });
+    dispatch('close');
+  };
+
+  onMount(async () => {
+    await tick();
+    titleInput?.focus();
+  });
+</script>
+
+<svelte:window on:keydown={onKeyDown} />
+
+<div
+  class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+  on:click={onOverlayClick}
+>
+  <section
+    class="w-full max-w-md rounded-2xl border border-neutral-700 bg-neutral-900 p-6 shadow-xl transition duration-200 ease-out"
+    in:scale={{ start: 0.95, duration: 200 }}
+    out:scale={{ start: 0.95, duration: 150 }}
+  >
+    <header class="mb-5">
+      <h2 class="text-xl font-semibold text-white">Add Event</h2>
+      <p class="mt-1 text-sm text-neutral-400">Schedule a new event on the calendar.</p>
+    </header>
+
+    <form class="space-y-4" on:submit|preventDefault={submit}>
+      <!-- Title -->
+      <div class="space-y-2">
+        <label class="text-xs font-medium uppercase tracking-wide text-neutral-400" for="event-title">Event Title</label>
+        <input
+          id="event-title"
+          bind:this={titleInput}
+          bind:value={title}
+          class="w-full rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500"
+          maxlength="90"
+          placeholder="Enter event title"
+          required
+        />
+      </div>
+
+      <!-- Date -->
+      <div class="space-y-2">
+        <label class="text-xs font-medium uppercase tracking-wide text-neutral-400" for="event-date">Date</label>
+        <input
+          id="event-date"
+          type="date"
+          bind:value={date}
+          class="w-full rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500"
+        />
+      </div>
+
+      <!-- Time Range -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-neutral-400" for="event-start">Start Time</label>
+          <input
+            id="event-start"
+            type="time"
+            bind:value={startTime}
+            class="w-full rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500"
+          />
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-medium uppercase tracking-wide text-neutral-400" for="event-end">End Time</label>
+          <input
+            id="event-end"
+            type="time"
+            bind:value={endTime}
+            class="w-full rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-500"
+          />
+        </div>
+      </div>
+
+      <!-- Tag Selector -->
+      <div class="space-y-2">
+        <label class="text-xs font-medium uppercase tracking-wide text-neutral-400">Tag</label>
+        <div class="flex flex-wrap gap-2">
+          {#each tagOptions as opt}
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition active:scale-95 {tag === opt
+                ? 'border-orange-500/60 bg-orange-500/15 text-orange-300'
+                : 'border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white'}"
+              on:click={() => (tag = opt)}
+            >
+              <span class="h-2 w-2 rounded-full {tagColors[opt] ?? 'bg-neutral-500'}"></span>
+              {opt}
+            </button>
+          {/each}
+        </div>
+      </div>
+
+      <div class="border-t border-neutral-700 pt-4"></div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          class="rounded-xl border border-neutral-600 px-4 py-2 text-sm text-neutral-200 transition hover:border-neutral-400 active:scale-95"
+          on:click={close}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="inline-flex min-w-[108px] items-center justify-center rounded-xl bg-orange-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-80"
+          disabled={submitting}
+        >
+          {#if submitting}
+            <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+          {:else}
+            Add Event
+          {/if}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

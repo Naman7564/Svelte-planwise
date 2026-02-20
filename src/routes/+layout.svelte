@@ -12,6 +12,7 @@
   import { tasks } from '$lib/stores/tasks';
   import { events } from '$lib/stores/events';
   import { connectRealtime, disconnectRealtime } from '$lib/stores/realtime';
+  import { profile } from '$lib/stores/profile';
 
   let initialized = false;
 
@@ -26,6 +27,7 @@
       // Load data once authenticated
       tasks.load();
       events.load();
+      profile.load();
       connectRealtime();
 
       // If on /auth, redirect to home
@@ -36,6 +38,7 @@
       // Clear data and redirect to auth
       tasks.clear();
       events.clear();
+      profile.clear();
       disconnectRealtime();
 
       if ($page.url.pathname !== '/auth') {

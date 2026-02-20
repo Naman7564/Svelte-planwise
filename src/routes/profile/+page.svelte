@@ -4,6 +4,7 @@
   import { tweened } from 'svelte/motion';
   import BottomNav from '$lib/components/BottomNav.svelte';
   import ProfileHeader from '$lib/components/profile/ProfileHeader.svelte';
+  import EditProfileModal from '$lib/components/profile/EditProfileModal.svelte';
   import StatCard from '$lib/components/profile/StatCard.svelte';
   import ActivityChart from '$lib/components/profile/ActivityChart.svelte';
   import InsightsCard from '$lib/components/profile/InsightsCard.svelte';
@@ -20,8 +21,10 @@
     totalTasks,
     weeklyStats
   } from '$lib/stores/tasks';
+  import { profile } from '$lib/stores/profile';
 
   let loading = true;
+  let showEditModal = false;
 
   const totalCounter = tweened(0, { duration: 500, easing: cubicOut });
   const completedCounter = tweened(0, { duration: 500, easing: cubicOut });
@@ -34,6 +37,8 @@
   $: productivityCounter.set($productivityScore);
 
   onMount(() => {
+    profile.load();
+
     const timer = setTimeout(() => {
       loading = false;
     }, 650);
@@ -43,7 +48,7 @@
 </script>
 
 <section class="space-y-4">
-  <ProfileHeader />
+  <ProfileHeader on:editProfile={() => (showEditModal = true)} />
 
   <div class="grid grid-cols-2 gap-3">
     <StatCard title="Total Tasks" value={Math.round($totalCounter)} icon="TT" {loading} />
@@ -67,3 +72,7 @@
 </section>
 
 <BottomNav />
+
+{#if showEditModal}
+  <EditProfileModal on:close={() => (showEditModal = false)} />
+{/if}
